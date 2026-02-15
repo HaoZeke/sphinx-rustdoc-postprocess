@@ -1,7 +1,7 @@
 name: Build and Deploy Documentation
 
 concurrency:
-  group: "pages"
+  group: "docs"
   cancel-in-progress: true
 
 on:
@@ -26,22 +26,17 @@ jobs:
         with:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: >-
+            docs
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pixi run sync
 
       - name: Build docs
-        run: pixi run docs
+        run: pixi run -e docs docbld
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: documentation
           path: docs/build/html
-
-      - name: Deploy
-        if: github.event_name == 'push'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/build/html
