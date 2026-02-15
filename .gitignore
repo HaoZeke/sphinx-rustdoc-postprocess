@@ -16,5 +16,9 @@ docs/build/
 .pixi/
 *.pixi
 
+# Generated site
+readme_src.html
+_site/
+
 # Ruff
 .ruff_cache/

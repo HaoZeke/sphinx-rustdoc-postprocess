@@ -21,6 +21,7 @@ platforms = ["linux-64"]
 emacs = ">=30.2,<31"
 
 [feature.docs.tasks]
+htmlize = { cmd = "emacs --batch --load publish.el", description = "Export readme_src.org to HTML landing page" }
 gen-readme = { cmd = "emacs --batch readme_src.org --eval '(require (quote ox-md))' --eval '(org-md-export-to-markdown)' && mv readme_src.md README.md", description = "Export readme_src.org to README.md" }
 mkrst = { cmd = "cd docs && emacs --batch --load export.el", description = "Export org-mode docs to RST" }
 sphinxbld = { cmd = "uv run --group docs sphinx-build -b html docs/source docs/build/html", depends-on = ["sync"], description = "Build Sphinx HTML docs" }

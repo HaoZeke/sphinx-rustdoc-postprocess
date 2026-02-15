@@ -14,7 +14,7 @@ via [[https://pandoc.org/][pandoc]].
 :CUSTOM_ID: the-problem
 :END:
 
-[[https://github.com/aspect-build/sphinxcontrib-rust][sphinxcontrib-rust]] generates RST files from Rust crates, but rustdoc
+[[https://github.com/aspect-build/sphinxcontrib-rust][sphinxcontrib-rust]] generates RST files from Rust crates, but ~rustdoc~
 doc-comments are written in markdown. The generated RST ends up with markdown
 fragments embedded verbatim inside directive bodies, which Sphinx cannot render
 correctly.
