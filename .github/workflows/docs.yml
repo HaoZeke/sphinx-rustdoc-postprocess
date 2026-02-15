@@ -1,48 +1,47 @@
-name: Docs
+name: Build and Deploy Documentation
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 on:
   push:
     branches: [main]
+    tags: ["*"]
   pull_request:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  build:
+  build_docs:
+    name: Build documentation
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: astral-sh/setup-uv@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          python-version: "3.12"
+          fetch-depth: 0
 
-      - name: Install pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc
+      - uses: prefix-dev/setup-pixi@v0.8.10
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
       - name: Install dependencies
-        run: uv sync --group docs
+        run: pixi run sync
 
       - name: Build docs
-        run: uv run sphinx-build -b html docs/source docs/build/html
+        run: pixi run docs
 
       - name: Upload artifact
-        if: github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: documentation
           path: docs/build/html
 
-  deploy:
-    if: github.ref == 'refs/heads/main'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy
+        if: github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/build/html
