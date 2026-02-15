@@ -1,4 +1,4 @@
-[project]
+[workspace]
 name = "sphinx-rustdoc-postprocess"
 channels = ["conda-forge"]
 platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
@@ -14,8 +14,11 @@ test = { cmd = "uv run pytest", depends-on = ["sync"] }
 lint = { cmd = "uv run ruff check src tests", depends-on = ["sync"] }
 format = { cmd = "uv run ruff format src tests", depends-on = ["sync"] }
 
+[feature.docs]
+platforms = ["linux-64"]
+
 [feature.docs.dependencies]
-emacs = ">=29"
+emacs = ">=30.2,<31"
 
 [feature.docs.tasks]
 gen-readme = { cmd = "emacs --batch readme_src.org --eval '(require (quote ox-md))' --eval '(org-md-export-to-markdown)' && mv readme_src.md README.md", description = "Export readme_src.org to README.md" }
@@ -25,5 +28,4 @@ docbld = { depends-on = ["mkrst", "sphinxbld"], description = "Full documentatio
 docs = { depends-on = ["docbld"], description = "Alias for docbld" }
 
 [environments]
-default = { solve-group = "default" }
-docs = { features = ["docs"], solve-group = "default" }
+docs = { features = ["docs"]}
