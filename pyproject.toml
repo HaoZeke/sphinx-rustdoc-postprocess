@@ -1,0 +1,30 @@
+[project]
+name = "sphinx-rustdoc-postprocess"
+version = "0.1.0"
+description = "Post-process sphinxcontrib-rust RST output, converting leftover markdown to proper RST via pandoc."
+readme = "README.md"
+authors = [
+    { name = "Rohit Goswami", email = "rgoswami@ieee.org" }
+]
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = ["sphinx>=7"]
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-cov", "pytest-randomly", "ruff>=0.9"]
+docs = ["sphinx>=8", "sphinx-autoapi>=3", "shibuya"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
+[tool.towncrier]
+package = "sphinx_rustdoc_postprocess"
+filename = "CHANGELOG.md"
+directory = "news"

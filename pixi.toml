@@ -1,0 +1,16 @@
+[project]
+name = "sphinx-rustdoc-postprocess"
+channels = ["conda-forge"]
+platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
+
+[dependencies]
+pandoc = ">=3"
+python = ">=3.10"
+uv = ">=0.7"
+
+[tasks]
+sync = "uv sync --all-groups"
+test = { cmd = "uv run pytest", depends-on = ["sync"] }
+lint = { cmd = "uv run ruff check src tests", depends-on = ["sync"] }
+format = { cmd = "uv run ruff format src tests", depends-on = ["sync"] }
+docs = { cmd = "uv run --group docs sphinx-build -b html docs/source docs/build/html", depends-on = ["sync"] }
