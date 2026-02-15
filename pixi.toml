@@ -13,4 +13,17 @@ sync = "uv sync --all-groups"
 test = { cmd = "uv run pytest", depends-on = ["sync"] }
 lint = { cmd = "uv run ruff check src tests", depends-on = ["sync"] }
 format = { cmd = "uv run ruff format src tests", depends-on = ["sync"] }
-docs = { cmd = "uv run --group docs sphinx-build -b html docs/source docs/build/html", depends-on = ["sync"] }
+
+[feature.docs.dependencies]
+emacs = ">=29"
+
+[feature.docs.tasks]
+gen-readme = { cmd = "emacs --batch readme_src.org --eval '(require (quote ox-md))' --eval '(org-md-export-to-markdown)' && mv readme_src.md README.md", description = "Export readme_src.org to README.md" }
+mkrst = { cmd = "cd docs && emacs --batch --load export.el", description = "Export org-mode docs to RST" }
+sphinxbld = { cmd = "uv run --group docs sphinx-build -b html docs/source docs/build/html", depends-on = ["sync"], description = "Build Sphinx HTML docs" }
+docbld = { depends-on = ["mkrst", "sphinxbld"], description = "Full documentation build" }
+docs = { depends-on = ["docbld"], description = "Alias for docbld" }
+
+[environments]
+default = { solve-group = "default" }
+docs = { features = ["docs"], solve-group = "default" }
