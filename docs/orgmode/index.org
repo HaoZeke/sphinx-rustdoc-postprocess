@@ -1,0 +1,61 @@
+#+OPTIONS: toc:nil todo:nil num:nil author:nil title:nil
+#+STARTUP: content
+* sphinx-rustdoc-postprocess
+
+Post-process sphinxcontrib-rust RST output, converting leftover markdown
+fragments (code fences, tables, links, headings, inline code) to proper RST
+via pandoc.
+
+#+begin_export rst
+.. toctree::
+   :maxdepth: 2
+
+   usage
+   autoapi/index
+#+end_export
+
+** The problem
+
+[[https://github.com/aspect-build/sphinxcontrib-rust][sphinxcontrib-rust]] generates RST files from Rust crates, but rustdoc
+doc-comments are written in markdown. The generated RST ends up with markdown
+fragments embedded verbatim inside directive bodies, which Sphinx cannot render
+correctly.
+
+For example, given Rust doc-comments with a markdown table and heading:
+
+#+begin_src rust
+//! ## Module Overview
+//!
+//! | Module | Purpose |
+//! |--------|---------|
+//! | [`types`] | `#[repr(C)]` data structures |
+#+end_src
+
+sphinxcontrib-rust produces RST like:
+
+#+begin_src rst
+.. py:module:: my_crate
+
+   ## Module Overview
+
+   | Module | Purpose |
+   |--------|---------|
+   | [`types`] | `#[repr(C)]` data structures |
+#+end_src
+
+After this extension runs, the output becomes valid RST:
+
+#+begin_src rst
+.. py:module:: my_crate
+
+   **Module Overview**
+
+   +----------+------------------------------+
+   | Module   | Purpose                      |
+   +==========+==============================+
+   | ``types``| ``#[repr(C)]`` data structures|
+   +----------+------------------------------+
+#+end_src
+
+For a real-world example, see [[https://rgpot.rgoswami.me/][rgpot]] ([[https://github.com/HaoZeke/rgpot][source]]), which uses this extension to
+document its Rust core library alongside C++ API docs.

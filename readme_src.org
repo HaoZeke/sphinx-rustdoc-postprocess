@@ -1,0 +1,207 @@
+#+OPTIONS: toc:nil todo:nil num:nil author:nil title:nil
+#+STARTUP: content
+* sphinx-rustdoc-postprocess
+:PROPERTIES:
+:CUSTOM_ID: about
+:END:
+
+Post-process [[https://github.com/aspect-build/sphinxcontrib-rust][sphinxcontrib-rust]] RST output, converting leftover markdown
+fragments (code fences, tables, links, headings, inline code) to proper RST
+via [[https://pandoc.org/][pandoc]].
+
+** The problem
+:PROPERTIES:
+:CUSTOM_ID: the-problem
+:END:
+
+[[https://github.com/aspect-build/sphinxcontrib-rust][sphinxcontrib-rust]] generates RST files from Rust crates, but rustdoc
+doc-comments are written in markdown. The generated RST ends up with markdown
+fragments embedded verbatim inside directive bodies, which Sphinx cannot render
+correctly.
+
+For a real-world example, see [[https://rgpot.rgoswami.me/][rgpot]] ([[https://github.com/HaoZeke/rgpot][source]]), which uses this extension to
+document its Rust core library alongside C++ API docs.
+
+*** Before (raw sphinxcontrib-rust output)
+
+Given Rust doc-comments like these in =lib.rs=:
+
+#+begin_src rust
+//! ## Module Overview
+//!
+//! | Module | Purpose |
+//! |--------|---------|
+//! | [`types`] | `#[repr(C)]` data structures for force/energy I/O |
+//! | [`tensor`] | DLPack tensor helpers |
+#+end_src
+
+sphinxcontrib-rust produces RST with the markdown still intact inside
+directives:
+
+#+begin_src rst
+.. py:module:: rgpot_core
+
+   ## Module Overview
+
+   | Module | Purpose |
+   |--------|---------|
+   | [`types`] | `#[repr(C)]` data structures for force/energy I/O |
+   | [`tensor`] | DLPack tensor helpers |
+#+end_src
+
+This renders incorrectly in Sphinx: headings inside directives break the
+document structure, markdown tables appear as literal pipe characters, and
+single-backtick code is not valid RST.
+
+*** After (postprocessed output)
+
+After this extension runs, the same file becomes:
+
+#+begin_src rst
+.. py:module:: rgpot_core
+
+   **Module Overview**
+
+   +------------+----------------------------------------------------+
+   | Module     | Purpose                                            |
+   +============+====================================================+
+   | ``types``  | ``#[repr(C)]`` data structures for force/energy IO |
+   +------------+----------------------------------------------------+
+   | ``tensor`` | DLPack tensor helpers                              |
+   +------------+----------------------------------------------------+
+#+end_src
+
+Similarly, markdown code fences:
+
+#+begin_src rst
+   ```c
+   rgpot_status_t s = rgpot_potential_calculate(pot, &input, &output);
+   if (s != RGPOT_SUCCESS) {
+       fprintf(stderr, "rgpot error: %s\n", rgpot_last_error());
+   }
+   ```
+#+end_src
+
+become proper RST code-block directives:
+
+#+begin_src rst
+   .. code-block:: c
+
+      rgpot_status_t s = rgpot_potential_calculate(pot, &input, &output);
+      if (s != RGPOT_SUCCESS) {
+          fprintf(stderr, "rgpot error: %s\n", rgpot_last_error());
+      }
+#+end_src
+
+And markdown links like ~[metatensor](https://docs.metatensor.org/)~ become
+=`metatensor <https://docs.metatensor.org/>`_=, while rustdoc intra-doc links
+like ~[`types`]~ become =``types``=.
+
+** Installation
+:PROPERTIES:
+:CUSTOM_ID: installation
+:END:
+
+#+begin_src bash
+pip install sphinx-rustdoc-postprocess
+#+end_src
+
+Pandoc must be available on your ~PATH~. See [[https://pandoc.org/installing.html][pandoc.org]] for installation
+instructions.
+
+** Usage
+:PROPERTIES:
+:CUSTOM_ID: usage
+:END:
+
+Add to your Sphinx =conf.py=:
+
+#+begin_src python
+extensions = [
+    "sphinxcontrib_rust",
+    "sphinx_rustdoc_postprocess",
+]
+#+end_src
+
+The extension hooks into =builder-inited= at priority 600 (after
+sphinxcontrib-rust's default 500), so it automatically runs on the generated
+RST files before Sphinx reads them.
+
+*** Configuration
+
+| Config value                         | Default    | Description                                              |
+|--------------------------------------+------------+----------------------------------------------------------|
+| =rustdoc_postprocess_rst_dir=        | ="crates"= | Subdirectory of =srcdir= to scan for RST files          |
+| =rustdoc_postprocess_toctree_target= | =""=       | RST file to inject a toctree snippet into (empty = skip) |
+| =rustdoc_postprocess_toctree_rst=    | =""=       | RST snippet to append to the target file (empty = skip)  |
+
+*** Full configuration example
+
+#+begin_src python
+# conf.py
+import os
+
+extensions = [
+    "sphinxcontrib_rust",
+    "sphinx_rustdoc_postprocess",
+]
+
+# sphinxcontrib-rust settings
+rust_crates = {
+    "my_crate": os.path.abspath("../../my-crate/"),
+}
+rust_doc_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crates")
+rust_rustdoc_fmt = "rst"
+
+# Inject a toctree entry for the Rust docs into an existing index page
+rustdoc_postprocess_toctree_target = "api/index.rst"
+rustdoc_postprocess_toctree_rst = """
+
+Rust API
+--------
+
+.. toctree::
+   :maxdepth: 2
+
+   ../crates/my_crate/lib
+"""
+#+end_src
+
+** What gets converted
+:PROPERTIES:
+:CUSTOM_ID: conversions
+:END:
+
+| Markdown construct           | RST output                                                     |
+|------------------------------+----------------------------------------------------------------|
+| ~```lang~ code fences        | =.. code-block:: lang= directives                             |
+| =\vert table \vert= pipe tables     | RST grid tables (via pandoc)                                   |
+| ~[text](url)~ links          | =`text <url>`_=                                                |
+| ~[`Name`]~ intra-doc links   | =``Name``=                                                     |
+| ~`code`~ inline code         | =``code``=                                                     |
+| =## Heading= ATX headings    | =**Heading**= (bold, since RST headings can't nest in directives) |
+
+** Development
+:PROPERTIES:
+:CUSTOM_ID: development
+:END:
+
+#+begin_src bash
+pixi install
+pixi run test
+#+end_src
+
+A ~pre-commit~ job is setup on CI to enforce consistent styles, so it is best
+to set it up locally as well (using [[https://docs.astral.sh/uv/guides/tools/][uvx]] for isolation):
+
+#+begin_src sh
+# Run before committing
+uvx pre-commit run --all-files
+#+end_src
+
+** License
+:PROPERTIES:
+:CUSTOM_ID: license
+:END:
+
+MIT
