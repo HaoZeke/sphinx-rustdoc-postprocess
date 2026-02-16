@@ -33,9 +33,9 @@ sphinxcontrib-rust produces RST with the markdown still intact inside
 directives:
 
     .. py:module:: rgpot_core
-    
+
        ## Module Overview
-    
+
        | Module | Purpose |
        |--------|---------|
        | [`types`] | `#[repr(C)]` data structures for force/energy I/O |
@@ -51,9 +51,9 @@ single-backtick code is not valid RST.
 After this extension runs, the same file becomes:
 
     .. py:module:: rgpot_core
-    
+
        **Module Overview**
-    
+
        +------------+----------------------------------------------------+
        | Module     | Purpose                                            |
        +============+====================================================+
@@ -74,7 +74,7 @@ Similarly, markdown code fences:
 become proper RST code-block directives:
 
     .. code-block:: c
-    
+
        rgpot_status_t s = rgpot_potential_calculate(pot, &input, &output);
        if (s != RGPOT_SUCCESS) {
            fprintf(stderr, "rgpot error: %s\n", rgpot_last_error());
@@ -152,29 +152,29 @@ RST files before Sphinx reads them.
 
     # conf.py
     import os
-    
+
     extensions = [
         "sphinxcontrib_rust",
         "sphinx_rustdoc_postprocess",
     ]
-    
+
     # sphinxcontrib-rust settings
     rust_crates = {
         "my_crate": os.path.abspath("../../my-crate/"),
     }
     rust_doc_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "crates")
     rust_rustdoc_fmt = "rst"
-    
+
     # Inject a toctree entry for the Rust docs into an existing index page
     rustdoc_postprocess_toctree_target = "api/index.rst"
     rustdoc_postprocess_toctree_rst = """
-    
+
     Rust API
     --------
-    
+
     .. toctree::
        :maxdepth: 2
-    
+
        ../crates/my_crate/lib
     """
 
@@ -244,4 +244,3 @@ to set it up locally as well (using [uvx](https://docs.astral.sh/uv/guides/tools
 ## License
 
 MIT
-
