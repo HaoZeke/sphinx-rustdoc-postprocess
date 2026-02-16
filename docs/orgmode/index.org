@@ -57,5 +57,5 @@ After this extension runs, the output becomes valid RST:
    +----------+------------------------------+
 #+end_src
 
-For a real-world example, see [[https://rgpot.rgoswami.me/][rgpot]] ([[https://github.com/HaoZeke/rgpot][source]]), which uses this extension to
+For a real-world example, see [[https://rgpot.rgoswami.me/][rgpot]] ([[https://github.com/OmniPotentRPC/rgpot][source]]), which uses this extension to
 document its Rust core library alongside C++ API docs.

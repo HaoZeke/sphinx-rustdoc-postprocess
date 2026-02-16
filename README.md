@@ -14,7 +14,7 @@ doc-comments are written in markdown. The generated RST ends up with markdown
 fragments embedded verbatim inside directive bodies, which Sphinx cannot render
 correctly.
 
-For a real-world example, see [rgpot](https://rgpot.rgoswami.me/) ([source](https://github.com/HaoZeke/rgpot)), which uses this extension to
+For a real-world example, see [rgpot](https://rgpot.rgoswami.me/) ([source](https://github.com/OmniPotentRPC/rgpot)), which uses this extension to
 document its Rust core library alongside C++ API docs.
 
 

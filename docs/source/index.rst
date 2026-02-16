@@ -57,5 +57,5 @@ After this extension runs, the output becomes valid RST:
        | ``types``| ``#[repr(C)]`` data structures|
        +----------+------------------------------+
 
-For a real-world example, see `rgpot <https://rgpot.rgoswami.me/>`_ (`source <https://github.com/HaoZeke/rgpot>`_), which uses this extension to
+For a real-world example, see `rgpot <https://rgpot.rgoswami.me/>`_ (`source <https://github.com/OmniPotentRPC/rgpot>`_), which uses this extension to
 document its Rust core library alongside C++ API docs.
