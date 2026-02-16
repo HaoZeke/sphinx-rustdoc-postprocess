@@ -20,7 +20,8 @@ class FakeApp:
 def test_setup_returns_metadata():
     app = FakeApp()
     result = setup(app)
-    assert result["version"] == "0.1.0"
+    assert isinstance(result["version"], str)
+    assert len(result["version"]) > 0
     assert result["parallel_read_safe"] is True
     assert result["parallel_write_safe"] is True
 

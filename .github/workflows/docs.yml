@@ -1,7 +1,7 @@
 name: Build and Deploy Documentation
 
 concurrency:
-  group: "docs"
+  group: "pages"
   cancel-in-progress: true
 
 on:
@@ -10,12 +10,15 @@ on:
     tags: ["*"]
   pull_request:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build_docs:
     name: Build documentation
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -40,3 +43,21 @@ jobs:
         with:
           name: documentation
           path: docs/build/html
+
+      - name: Upload pages artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/build/html
+
+  deploy:
+    if: github.event_name == 'push'
+    needs: build_docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

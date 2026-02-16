@@ -1,6 +1,6 @@
 [project]
 name = "sphinx-rustdoc-postprocess"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Post-process sphinxcontrib-rust RST output, converting leftover markdown to proper RST via pandoc."
 readme = "README.md"
 authors = [
@@ -11,8 +11,14 @@ license = "MIT"
 dependencies = ["sphinx>=7"]
 
 [build-system]
-requires = ["uv_build>=0.9.26,<0.10.0"]
-build-backend = "uv_build"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/sphinx_rustdoc_postprocess/_version.py"
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-cov", "pytest-randomly", "ruff>=0.9"]
@@ -20,6 +26,9 @@ docs = ["sphinx>=8", "sphinx-autoapi>=3", "shibuya"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+exclude = ["src/sphinx_rustdoc_postprocess/_version.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]

@@ -17,6 +17,11 @@ from pathlib import Path
 from sphinx.application import Sphinx
 from sphinx.util import logging
 
+from sphinx_rustdoc_postprocess._version import (  # noqa: F401
+    __version__,
+    __version_tuple__,
+)
+
 _log = logging.getLogger(__name__)
 
 # Matches an indented markdown fenced code block:
@@ -309,7 +314,7 @@ def setup(app: Sphinx) -> dict:
     app.add_config_value("rustdoc_postprocess_toctree_rst", "", "env")
     app.connect("builder-inited", _on_builder_inited, priority=600)
     return {
-        "version": "0.1.0",
+        "version": __version__,
         "parallel_read_safe": True,
         "parallel_write_safe": True,
     }
