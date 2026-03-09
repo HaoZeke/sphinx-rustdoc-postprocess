@@ -19,7 +19,7 @@ intersphinx_mapping = {
 
 html_theme = "shibuya"
 html_theme_options = {
-    "github_url": "https://github.com/HaoZeke/sphinxcontrib-rustdoc-postprocess",
+    "github_url": "https://github.com/HaoZeke/sphinx-rustdoc-postprocess",
     "nav_links": [
         {
             "title": "PyPI",
