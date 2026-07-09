@@ -56,6 +56,13 @@ _INLINE_CODE_RE = re.compile(
     r"(?<!`)(`)((?!`)(?:[^`\n<>])+)\1(?!`)",
 )
 
+# Sphinx role prefix immediately before a backtick: :role:` or :domain:role:`
+# (e.g. :rust:any:`path`, :class:`Foo`). Used so inline-code conversion does not
+# turn valid roles into double-backtick literals.
+_ROLE_PREFIX_RE = re.compile(
+    r":[a-zA-Z][\w.-]*(?::[a-zA-Z][\w.-]*)?:$",
+)
+
 # Matches markdown hyperlinks: [text](url)
 _MD_LINK_RE = re.compile(
     r"\[(?P<text>[^\[\]]+)\]\((?P<url>https?://[^)]+)\)",
@@ -184,6 +191,10 @@ def _convert_links(content: str) -> str:
 def _convert_inline_code(content: str) -> str:
     """Convert markdown inline code to RST double-backtick literals.
 
+    Sphinx interpreted-text roles (``:role:`text```, ``:domain:role:`text```)
+    are left unchanged so sphinxcontrib-rust re-export lists like
+    ``* :rust:any:`crate::mod::Item``` keep working.
+
     Parameters
     ----------
     content : str
@@ -195,11 +206,17 @@ def _convert_inline_code(content: str) -> str:
         Content with single-backtick code converted to double-backtick literals.
     """
 
+    def _repl(m: re.Match[str]) -> str:
+        before = m.string[: m.start()]
+        if _ROLE_PREFIX_RE.search(before):
+            return m.group(0)
+        return f"``{m.group(2)}``"
+
     def _process_line(line: str) -> str:
         stripped = line.lstrip()
         if stripped.startswith("..") or stripped.startswith(":"):
             return line
-        return _INLINE_CODE_RE.sub(r"``\2``", line)
+        return _INLINE_CODE_RE.sub(_repl, line)
 
     return "\n".join(_process_line(line) for line in content.split("\n"))
 

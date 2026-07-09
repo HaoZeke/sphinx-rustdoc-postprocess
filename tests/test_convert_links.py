@@ -58,3 +58,19 @@ class TestConvertInlineCode:
         content = "   `text <https://url.com>`_"
         result = _convert_inline_code(content)
         assert result == content
+
+    def test_sphinx_role_preserved(self):
+        """sphinxcontrib-rust re-export bullets must stay as :rust:any:`path`."""
+        content = "   * :rust:any:`canonic::check::CheckReport`"
+        assert _convert_inline_code(content) == content
+
+    def test_domain_role_preserved_beside_md_code(self):
+        content = "   See :rust:struct:`Foo` and use `bar`."
+        result = _convert_inline_code(content)
+        assert ":rust:struct:`Foo`" in result
+        assert "``bar``" in result
+        assert ":rust:struct:``Foo``" not in result
+
+    def test_simple_role_preserved(self):
+        content = "   See :class:`MyClass` for details."
+        assert _convert_inline_code(content) == content
